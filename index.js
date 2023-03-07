@@ -1,6 +1,7 @@
 const express = require('express');
 const mysql = require('mysql');
 const multer = require('multer');
+const cors = require("cors");
 
 const storage = multer.diskStorage({
     filename: function (req, file, cb) {
@@ -21,6 +22,8 @@ const db = mysql.createConnection({
 })
 
 const app = express();
+
+app.use(cors())
 
 //get api
 app.get('/', (req, res) => {
