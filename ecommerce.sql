@@ -1,4 +1,4 @@
-create table category (
+create table categorys (
     category_id int auto_increment,
     category_name varchar(100) not null,
     category_image varchar(200) not null,
