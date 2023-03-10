@@ -1,27 +1,51 @@
 const express = require('express');
+const app = express()
 const mysql = require('mysql');
 const multer = require('multer');
 const cors = require("cors");
+const path = require('path');
+// const bodyParser = require('body-parser');
 
-const storage = multer.diskStorage({
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + '-' + file.originalname)
-    },
-    destination: function (req, file, cb) {
-        cb(null, "upload")
-    }
-})
 
-const upload = multer({ storage: storage });
+app.use(cors());
+app.use(express.static("./public"))
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
 
 const db = mysql.createConnection({
     host: 'localhost',
     database: 'ecommerce_v2',
     user: 'root',
     password: ''
+    
 })
 
-const app = express();
+
+
+
+
+
+
+
+// const storage = multer.diskStorage({
+//     filename: function (req, file, cb) {
+//         cb(null, Date.now() + '-' + file.originalname)
+//     },
+//     destination: function (req, file, cb) {
+//         cb(null, './public/images/')
+//     }
+// })
+
+var storage = multer.diskStorage({
+    destination: (req, file, callBack) => {
+        callBack(null, './public/images/')     // './public/images/' directory name where save the file
+    },
+    filename: (req, file, callBack) => {
+        callBack(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
+    }
+})
+
+const upload = multer({ storage: storage });
 
 app.use(cors())
 
@@ -31,19 +55,34 @@ app.get('/', (req, res) => {
 })
 
 //POST API
-app.post('/category', upload.single('image_url'), (req, res) => {
-    const category = req.body;
-    const filename = req.file.filename;
-    const query = `insert into categorys (category_name, category_image, category_icon, is_enable)
-                    values ('${category.name}', '${filename}', '${filename}', false)`;
-    db.query(query, (err, result) => {
-        if (err) {
-            console.log(err)
-            res.send("Error! ")
-        }
-        else res.send("Se guardaron los cambios Correctamente")
-    })
-})
+// app.post('/category', upload.single('image_url'), (req, res) => {
+//     const category = req.body;
+//     const filename = req.file.filename;
+//     const query = `insert into categorys (category_name, category_image, category_icon, is_enable)
+//                     values ('${category.name}', '${filename}', '${filename}', false)`;
+//     db.query(query, (err, result) => {
+//         if (err) {
+//             console.log(err)
+//             res.send("Error! ")
+//         }
+//         else res.send("Se guardaron los cambios Correctamente")
+//     })
+// })
+
+app.post("/category", upload.single('image'), (req, res) => {
+    if (!req.file) {
+        console.log("No file upload");
+    } else {
+        console.log(req.file.filename)
+        var imgsrc = 'http://localhost:5050/images/' + req.file.filename
+        var insertData = "INSERT INTO categorys(category_name, category_image)VALUES(?)"
+        db.query(insertData, [imgsrc], (err, result) => {
+            if (err) throw err
+                console.log("Se subio el archivo")
+        })
+    }
+});
+
 
 app.post('/product', upload.single('image_url'), (req, res) => {
     const product = req.body;
