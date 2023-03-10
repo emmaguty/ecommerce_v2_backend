@@ -17,15 +17,8 @@ const db = mysql.createConnection({
     database: 'ecommerce_v2',
     user: 'root',
     password: ''
-    
+
 })
-
-
-
-
-
-
-
 
 // const storage = multer.diskStorage({
 //     filename: function (req, file, cb) {
@@ -46,8 +39,6 @@ var storage = multer.diskStorage({
 })
 
 const upload = multer({ storage: storage });
-
-app.use(cors())
 
 //get api
 app.get('/', (req, res) => {
@@ -74,11 +65,13 @@ app.post("/category", upload.single('image'), (req, res) => {
         console.log("No file upload");
     } else {
         console.log(req.file.filename)
+        const category = req.body;
         var imgsrc = 'http://localhost:5050/images/' + req.file.filename
-        var insertData = "INSERT INTO categorys(category_name, category_image)VALUES(?)"
+        var insertData = `insert into categorys (category_name, category_image, category_icon, is_enable)
+                          values ('${category.name}', '${imgsrc}', '${imgsrc}', true)`;
         db.query(insertData, [imgsrc], (err, result) => {
             if (err) throw err
-                console.log("Se subio el archivo")
+            console.log("Se subio el archivo")
         })
     }
 });
